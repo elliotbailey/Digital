@@ -52,37 +52,29 @@ class Point:
         """Implements dimension-wise addition of Point objects"""
         if self.dimension != other.dimension:
             raise ValueError("Points must have the same dimension")
-        
-        new_coordinates = np.array([
-            self.coordinates[i] + other.coordinates[i]
-            for i in range(self.dimension)
-        ])
 
-        return Point(new_coordinates)
+        return Point(self.coordinates + other.coordinates)
 
     def __sub__(self, other: Point) -> Point:
         """Implements dimension-wise addition of Point objects"""
         if self.dimension != other.dimension:
             raise ValueError("Points must have the same dimension")
-        
-        new_coordinates = np.array([
-            self.coordinates[i] - other.coordinates[i]
-            for i in range(self.dimension)
-        ])
 
-        return Point(new_coordinates)
+        return Point(self.coordinates + other.coordinates)
+    
+    def __mul__(self, other: float | int) -> Point:
+        """Implements scalar multiplication of Point objects"""
+        if not isinstance(other, (float, int)):
+            raise TypeError("Can only multiply by a scalar")
+
+        return Point(self.coordinates * other)
     
     def __truediv__(self, other: float | int) -> Point:
         """Implements scalar true division of Point objects"""
         if not isinstance(other, (float, int)):
             raise TypeError("Can only divide by a scalar")
 
-        new_coordinates = np.array([
-            self.coordinates[i] / other
-            for i in range(self.dimension)
-        ])
-
-        return Point(new_coordinates)
+        return Point(self.coordinates / other)
 
     def __str__(self) -> str:
         return f"({', '.join([str(coord) for coord in self.coordinates])})"
@@ -159,6 +151,9 @@ class PointCloud:
     
     def plot(self) -> None:
         """Plot the point cloud in 3D space
+
+        This shouldn't be used except for debugging purposes - also freezes
+        the main process.
         """
         if self.dimension != 3:
             raise ValueError("Can only plot 3-dimensional point clouds")
