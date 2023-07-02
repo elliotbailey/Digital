@@ -1,65 +1,25 @@
-import mediapipe as mp
 import cv2
 
 from point_tools import PointCloud
+from camera import CameraManager
 
-# 720P = 1280 x 720
-# 480P = 640 x 480
-CAMERA_WIDTH = 640
-CAMERA_HEIGHT = 480
+def main():
 
-def main_loop(cap, mpHands, hands, mpDraw):
-    _, frame = cap.read()
+    cm = CameraManager()
 
-    frame = cv2.flip(frame, 1)
-    framergb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    while True:
+        output = cm.process_hands()
+        cv2.imshow("Output", output.frame)
+        if output.hand_landmarks is not None:
+            point_cloud = PointCloud.from_mphands(output.hand_landmarks[0])
 
-    result = hands.process(framergb)
-
-    point_cloud = None
-    if result.multi_hand_landmarks:
-        for handLms in result.multi_hand_landmarks:
-            mpDraw.draw_landmarks(frame, handLms, mpHands.HAND_CONNECTIONS)
-
-            point_cloud = PointCloud.from_mphands(handLms.landmark)
-            #print(point_cloud.points)
-    
-    cv2.imshow("Output", frame)
-
-    # Keyboard input
-    keypress = cv2.waitKey(1)
-    if keypress != -1:
-        keypress = chr(keypress)
+        keypress = cv2.waitKey(1)
+        keypress = chr(keypress) if keypress != -1 else None
         match keypress:
             case "q":
                 return False
             case "p":
-                if point_cloud is not None:
-                    point_cloud.plot()
-
-
-    return True
-
-def main():
-
-    mpHands = mp.solutions.hands
-    hands = mpHands.Hands(
-        max_num_hands=1,
-        min_detection_confidence=0.5,
-        min_tracking_confidence=0.8
-    )
-    mpDraw = mp.solutions.drawing_utils
-
-    cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
-    cap.set(cv2.CAP_PROP_FRAME_WIDTH, CAMERA_WIDTH)
-    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, CAMERA_HEIGHT)
-
-    while True:
-        if not main_loop(cap, mpHands, hands, mpDraw):
-            break
-
-    cap.release()
-    cv2.destroyAllWindows()
+                del cm
 
 if __name__ == "__main__":
     main()
