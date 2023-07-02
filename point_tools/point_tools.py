@@ -60,7 +60,7 @@ class Point:
         if self.dimension != other.dimension:
             raise ValueError("Points must have the same dimension")
 
-        return Point(self.coordinates + other.coordinates)
+        return Point(self.coordinates - other.coordinates)
     
     def __mul__(self, other: float | int) -> Point:
         """Implements scalar multiplication of Point objects"""
@@ -95,7 +95,7 @@ class PointCloud:
     """A point cloud in n-dimensional space
 
     Attributes:
-        points (np.array): An array of Point3D objects representing the points
+        points (np.array): An array of Point objects representing the points
             in the point cloud
         dimension (int): The number of dimensions of the point cloud
         point_count (int): The number of points in the point cloud
@@ -136,6 +136,24 @@ class PointCloud:
             point_count=point_count,
             normalise=normalise
         )
+    
+    @classmethod
+    def from_csv_line(
+        cls,
+        line: str,
+        delimiter: str = ',',
+        dimension: int = 3,
+        point_count: int = 21,
+        normalise: bool = True
+    ) -> None:
+        """Create a PointCloud object from a line of a CSV file
+        """
+        return cls(
+            points=[float(coord) for coord in line.split(delimiter)],
+            dimension=dimension,
+            point_count=point_count,
+            normalise=normalise
+        )
 
     def normalise(self) -> None:
         """Normalise the points relative to the first point in the point cloud
@@ -143,7 +161,7 @@ class PointCloud:
         """
         origin = self.points[0]
         max_distance = max(
-            [distance(point, origin) for point in self.points]
+            [distance(point, origin) for point in self.points[1:]]
         )
         self.points = np.array([
             (point - origin) / max_distance for point in self.points
@@ -172,7 +190,7 @@ class PointCloud:
         
 
 
-def distance(self, point1: Point, point2: Point = Origin()) -> float:
+def distance(point1: Point, point2: Point = Origin()) -> float:
         """Calculate the distance between two Point objects
         """
         return math.sqrt(sum(
